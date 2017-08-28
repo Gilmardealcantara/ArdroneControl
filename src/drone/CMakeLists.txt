@@ -11,8 +11,12 @@ find_package(catkin REQUIRED COMPONENTS
   ardrone_autonomy
   roscpp
   rospy
-  #tum_simulator
+  image_transport 
+  cv_bridge
+  sensor_msgs
+  cv_bridge
 )
+
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -110,6 +114,10 @@ catkin_package(
     ardrone_autonomy 
     roscpp 
     rospy 
+    image_transport 
+    cv_bridge
+    sensor_msgs
+    cv_bridge
     #tum_simulator
 #  DEPENDS system_lib
 )
