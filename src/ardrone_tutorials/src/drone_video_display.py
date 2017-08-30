@@ -60,7 +60,7 @@ class DroneVideoDisplay(QtGui.QMainWindow):
 		self.subNavdata = rospy.Subscriber('/ardrone/navdata',Navdata,self.ReceiveNavdata) 
 		
 		# Subscribe to the drone's video feed, calling self.ReceiveImage when a new frame is received
-		self.subVideo   = rospy.Subscriber('/ardrone/bottom/image_raw',Image,self.ReceiveImage)
+		self.subVideo   = rospy.Subscriber('/ardrone/image_raw',Image,self.ReceiveImage)
 		
 		# Holds the image frame received from the drone and later processed by the GUI
 		self.image = None

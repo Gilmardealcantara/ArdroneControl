@@ -29,7 +29,7 @@ class ImageConverter
     ImageConverter(): it_(nh_)
     {
         // Subscrive to input video feed and publish output video feed
-        image_sub_ = it_.subscribe("ardrone/bottom/image_raw", 1,
+        image_sub_ = it_.subscribe("ardrone/image_raw", 1,
                 &ImageConverter::imageCb, this);
         image_pub_ = it_.advertise("/image_converter/output_video", 1);
 
@@ -75,12 +75,13 @@ class ImageConverter
         ref.x = cv_ptr->image.size().width/2;
         ref.y = cv_ptr->image.size().height/2;
         if(circles.size() == 1){
-            cv::circle(cv_ptr->image, cv::Point(circles[0][0], circles[0][1]), circles[0][2], CV_RGB(0,255,0), 5);
+            //cv::circle(cv_ptr->image, cv::Point(circles[0][0], circles[0][1]), circles[0][2], CV_RGB(0,255,0), 5);
             mark.x = circles[0][0];
             mark.y = circles[0][1];
             mark.r = circles[0][2];
             printf("Referencia(%f, %f), Alvo(%f, %f), raio: %f\n", ref.x, ref.y, mark.x, mark.y, mark.r);
         }
+        cv::circle(cv_ptr->image, cv::Point(mark.x, mark.y), mark.r, CV_RGB(0,255,0), 5);
         cv::circle(cv_ptr->image, cv::Point(ref.x, ref.y), 10, CV_RGB(0,0,255), 7);
         // Update GUI Window
         cv::imshow(OPENCV_WINDOW, cv_ptr->image);
@@ -94,6 +95,7 @@ class ImageConverter
 int main(int argc, char** argv)
 {
     ros::init(argc, argv, "image_converter");
+    system("rosservice call /ardrone/setcamchannel \"channel: 1\"");
     ImageConverter ic;
     ros::spin();
     return 0;
