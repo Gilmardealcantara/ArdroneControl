@@ -8,6 +8,7 @@
 #include <unistd.h>
 
 static const std::string OPENCV_WINDOW = "Image window";
+static const std::string OPENCV_WINDOW2 = "Image window limit";
 
 typedef struct Figure{
     double x;
@@ -34,11 +35,13 @@ class ImageConverter
         image_pub_ = it_.advertise("/image_converter/output_video", 1);
 
         cv::namedWindow(OPENCV_WINDOW);
+        cv::namedWindow(OPENCV_WINDOW2);
     }
 
     ~ImageConverter()
     {
         cv::destroyWindow(OPENCV_WINDOW);
+        cv::destroyWindow(OPENCV_WINDOW2);
     }
 
     void imageCb(const sensor_msgs::ImageConstPtr& msg)
@@ -84,7 +87,8 @@ class ImageConverter
         cv::circle(cv_ptr->image, cv::Point(mark.x, mark.y), mark.r, CV_RGB(0,255,0), 5);
         cv::circle(cv_ptr->image, cv::Point(ref.x, ref.y), 10, CV_RGB(0,0,255), 7);
         // Update GUI Window
-        cv::imshow(OPENCV_WINDOW, cv_ptr->image);
+        //cv::imshow(OPENCV_WINDOW, cv_ptr->image);
+        cv::imshow(OPENCV_WINDOW2, red_hue_image);
         cv::waitKey(3);
 
         // Output modified video stream

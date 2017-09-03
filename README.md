@@ -7,4 +7,5 @@ add executable and src local in /scr/packege/Cmake...txt
 
 catkin build package
 
-
+change cam
+rosservice call /ardrone/togglecam 
