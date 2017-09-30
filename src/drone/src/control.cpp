@@ -12,15 +12,16 @@
 #include <cmath>        // std::abs
 #include <signal.h>
 
-#define ALTD 1500
+#define ALTD 1000
+#define INIT true
 
 void ctrlc_handle(int s);
 static const std::string OPENCV_WINDOW = "Image window";
 static const std::string OPENCV_WINDOW2 = "Image window limit";
 
 typedef struct Figure{
-    double x;
-    double y;
+    double width;
+    double height;
     double r;
 }figure;
 
@@ -32,12 +33,12 @@ class Control
                     land_pub_;
     ros::Subscriber nav_data_sub_;
     
-    geometry_msgs::Twist base_cmd;
     std_msgs::Empty msgEmpty;
     struct sigaction sigIntHandler;
-    int altitude;
 
     public:
+        int altitude;
+        geometry_msgs::Twist base_cmd;
     
         Control()
         {
@@ -47,12 +48,21 @@ class Control
                     &Control::navDataReceive, this);
            
             
-            // init and end
-            signal(SIGINT, ctrlc_handle);
-            //take of 
-            take_off_pub_ = nh_.advertise<std_msgs::Empty>("/ardrone/takeoff", 1, true);         
-            land_pub_ = nh_.advertise<std_msgs::Empty>("/ardrone/land", 1, true);         
-            take_off_pub_.publish(msgEmpty);
+            if(INIT){
+                // init and end
+                signal(SIGINT, ctrlc_handle);
+                //take of 
+                take_off_pub_ = nh_.advertise<std_msgs::Empty>("/ardrone/takeoff", 1, true);         
+                land_pub_ = nh_.advertise<std_msgs::Empty>("/ardrone/land", 1, true);         
+                take_off_pub_.publish(msgEmpty);
+                //zeroAllVell();
+                base_cmd.linear.x = 0; 
+                base_cmd.linear.y = 0;
+                base_cmd.linear.z = 0;
+                base_cmd.angular.z = 0;
+                base_cmd.angular.x = 0;
+                base_cmd.angular.y = 0;
+            }
         }
         
         ~Control()
@@ -68,7 +78,7 @@ class Control
         void zeroAllVel(){
             base_cmd.linear.x = 0; 
             base_cmd.linear.y = 0;
-            base_cmd.linear.z = 0;
+            //base_cmd.linear.z = 0;
             base_cmd.angular.z = 0;
             base_cmd.angular.x = 0;
             base_cmd.angular.y = 0;
@@ -79,8 +89,11 @@ class Control
             altitude = msg.altd;
             double vel_lz = (double)(ALTD - msg.altd)/1000;
             double vel_az = - (double)(msg.rotZ)/180;
+            //printf("\nrotZ: %.2f, velaz: %.2f\n", msg.rotZ, vel_az);
+            //printf("\nvelX: %f, velY: %f,  velZ: %f\n", msg.vx, msg.vy, msg.vz);
             base_cmd.angular.z = vel_az;
             base_cmd.linear.z = vel_lz;
+            //cmd_vel_pub_.publish(base_cmd);
         }
 
         void set_cmd(double xl, double yl)
@@ -93,27 +106,42 @@ class Control
          
         void run(Figure mark, Figure ref, bool found)
         {
-            double errx = mark.x - ref.x; 
-            double erry = mark.y - ref.y; 
+            double errx = mark.height - ref.height; 
+            double erry = mark.width - ref.width; 
 
-            double linear_x = found ? -(double)errx/320.00: 0.00, 
-                   linear_y = found ? -(double)erry/180.00 : 0.00, 
-                   vel = 0.5, raio = 1;
+            //bool cond = (found && (altitude > (ALTD - 5) && altitude < ALTD)
+            //            && (base_cmd.angular.z > -5 ) && (base_cmd.angular.z < 5));
+
+            // double linear_x = found ? - (double)errx/11520.00: 0.00, //180
+            //        linear_y = found ? -(double)erry/20480.00 : 0.00; //360
+            int mul = 1;
+            double linear_x = found ? - (double)errx/(180.00*mul): 0.00, //180
+                   linear_y = found ? -(double)erry/(360.00*mul) : 0.00; //360
+            
+            double  vel = 0.5, raio = 1;
             
             printf("\n\n\n\nRef(%.2f, %.2f), Alvo(%.2f, %.2f),"
                     "\nraio:  %.2f, alt    %d\n"
                     "\nerrx:  %.2f, erry:  %.2f"
-                    "\nvellx: %.2f, velly: %.2f"
-                    "\nvellz: %.2f, velaz: %.2f\n", 
-                    ref.x, ref.y, mark.x, mark.y, mark.r, altitude,
+                    "\nvellx: %.4f, velly: %.4f"
+                    "\nvelaz: %.2f, vellz: %.2f\n", 
+                    ref.width, ref.height, mark.width, mark.height, mark.r, altitude,
                     errx, erry, linear_x, linear_y, 
                     base_cmd.angular.z, base_cmd.linear.z);
-            set_cmd(linear_y, linear_x); 
+            set_cmd(linear_x, linear_y); 
             //set_cmd(0, 0); 
         }
 };
 void ctrlc_handle(int s){
-    Control c; 
+    Control c;
+    while(c.altitude > 200){
+           c.base_cmd.linear.x = 0; 
+           c.base_cmd.linear.y = 0;
+           c.base_cmd.linear.z = -0.7;
+           c.base_cmd.angular.z = 0;
+           c.base_cmd.angular.x = 0;
+           c.base_cmd.angular.y = 0;
+    }
     c.land();
     printf("***STOP*** %d\n",s);
     exit(1);
@@ -134,7 +162,7 @@ class ImageConverter
         ImageConverter(): it_(nh_)
         {
             //  Subscrive to input video feed and publish output video feed
-            image_sub_ = it_.subscribe("ardrone/image_raw", 1,
+            image_sub_ = it_.subscribe("/ardrone/image_raw", 1,
                     &ImageConverter::imageCb, this);
             image_pub_ = it_.advertise("/image_converter/output_video", 1);
 
@@ -184,15 +212,15 @@ class ImageConverter
             cv::HoughCircles(red_hue_image, circles, CV_HOUGH_GRADIENT, 1, red_hue_image.rows/8, 100, 20, 0, 0);
 
             // Loop over all detected circles and outline them on the original image
-            ref.x = cv_ptr->image.size().width/2;
-            ref.y = cv_ptr->image.size().height/2;
+            ref.width = cv_ptr->image.size().width/2;
+            ref.height = cv_ptr->image.size().height/2;
             double raio = 0;
             bool found = false;
             for(int i = 0; i < circles.size(); i++){
                 //cv::circle(cv_ptr->image, cv::Point(circles[0][0], circles[0][1]), circles[0][2], CV_RGB(0,255,0), 5);
                 if(circles[i][2] > raio){
-                    mark.x = circles[i][0];
-                    mark.y = circles[i][1];
+                    mark.width = circles[i][0];
+                    mark.height = circles[i][1];
                     mark.r = raio = circles[i][2];
                     found = true;
                 }
@@ -200,8 +228,8 @@ class ImageConverter
             }
             control.run(mark, ref, found);
 
-            cv::circle(orig_image, cv::Point(mark.x, mark.y), mark.r, CV_RGB(0,255,0), 5);
-            cv::circle(orig_image, cv::Point(ref.x, ref.y), 10, CV_RGB(0,0,255), 7);
+            cv::circle(orig_image, cv::Point(mark.width, mark.height), mark.r, CV_RGB(0,255,0), 5);
+            cv::circle(orig_image, cv::Point(ref.width, ref.height), 10, CV_RGB(0,0,255), 7);
             // Update GUI Window
             cv::imshow(OPENCV_WINDOW, orig_image);
             //cv::imshow(OPENCV_WINDOW2, red_hue_image);
@@ -216,8 +244,8 @@ class ImageConverter
 int main(int argc, char** argv)
 {
     ros::init(argc, argv, "image_converter");
-    //system("rosservice call /ardrone/setcamchannel \"channel: 1\"");
     //system("rosservice call /ardrone/togglecam"); //simu
+    //system("rosservice call /ardrone/setcamchannel \"channel: 1\"");
     ImageConverter ic;
     //Control co;
     ros::spin();
