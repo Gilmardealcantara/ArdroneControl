@@ -6,17 +6,15 @@
 #include "../include/drone/control.h"
 
 int flag = 0;
-Control *control = nullptr;
-ImageConverter *ic = nullptr;
 
 void  ctrlc_handle(int s){
+	Control *control = new Control(1000, true);
 	if(control){
 		printf("finishing\n");
 		control->altitude = 0;
 		control->end();
 		ros::shutdown();
 		delete control;
-		delete ic;
 		printf("finished\n");
 		flag = 1;
 	}else if (flag){
@@ -40,8 +38,8 @@ int main(int argc, char** argv)
 	// init and end
     //system("rosservice call /ardrone/togglecam"); //simu
     //system("rosservice call /ardrone/setcamchannel \"channel: 1\"");
-	control = new Control(1000, true);
-    ic = new ImageConverter(control);
+    //ic = new ImageConverter();
+	ImageConverter ic;
 	
 	//control->init();
 	/*
@@ -52,6 +50,5 @@ int main(int argc, char** argv)
 	}
 	*/
 	ros::spin();
-	delete ic;	
     return 0;
 }

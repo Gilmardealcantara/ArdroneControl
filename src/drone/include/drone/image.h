@@ -14,7 +14,7 @@ class ImageConverter
 {
 	private:
 		ros::NodeHandle nh_;
-		Control *control = nullptr;
+		Control *control = new Control(1000, true);
 		image_transport::ImageTransport it_;
 		image_transport::Subscriber image_sub_;
 		image_transport::Publisher image_pub_;
@@ -23,7 +23,7 @@ class ImageConverter
         figure mark;
         figure ref;
         
-		ImageConverter(Control *c);
+		ImageConverter();
         ~ImageConverter();
         void imageCb(const sensor_msgs::ImageConstPtr& msg);
 };

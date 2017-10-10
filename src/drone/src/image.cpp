@@ -1,15 +1,15 @@
 #include "../include/drone/image.h"
 
-ImageConverter::ImageConverter(Control *c): it_(nh_)
+ImageConverter::ImageConverter(): it_(nh_)
 {
-	//  Subscrive to input video feed and publish output video feed
+	//Subscrive to input video feed and publish output video feed
 	image_sub_ = it_.subscribe("/ardrone/image_raw", 1,
 			&ImageConverter::imageCb, this);
 	image_pub_ = it_.advertise("/image_converter/output_video", 1);
 
 	cv::namedWindow(OPENCV_WINDOW);
 	//cv::namedWindow(OPENCV_WINDOW2);
-	control = c;
+	//control = c;
 	control->init();
 }
 
@@ -17,6 +17,7 @@ ImageConverter::~ImageConverter()
 {
 	cv::destroyWindow(OPENCV_WINDOW);
 	//cv::destroyWindow(OPENCV_WINDOW2);
+	delete control;
 }
 
 void ImageConverter::imageCb(const sensor_msgs::ImageConstPtr& msg)
