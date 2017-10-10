@@ -25,6 +25,15 @@ void Control::init(){
 	}
 }
 
+double Control::pid(double Kp, double Ki, double Kd, 
+					double err, double err_ant, double T)
+{
+	P = Kp*err;
+	I += Ki*err*T;
+	D = (Kd*(err - err_ant))/T;
+	//printf("P: %lf, I: %lf, D: %lf\n", P, I, D);
+	return (P + I + D);
+}
 
 void Control::end(){
 	if(INIT){
@@ -53,11 +62,15 @@ void Control::navDataReceive(const ardrone_autonomy::Navdata& msg){
 }
 
 void Control::stabilize(){
-	double vel_lz = (double)(ALTD - current_msg.altd)/1000;
-	double vel_az = - (double)(current_msg.rotZ)/180;
+	double	err_lz = (double)(ALTD - current_msg.altd)/1000, 
+			err_az = - (double)(current_msg.rotZ)/180; // -1 : 1
+	//printf("err: %lf %lf\n", err_lz, err_az);
+	double vel_lz =  pid(1, 0, 0, err_lz, 0 , 1);
+	double vel_az = pid(1, 0, 0, err_az, 0 , 1);
+	//printf("vel: %lf %lf\n", vel_lz, vel_az);
 	
-	base_cmd.linear.x = 0.0;//- (double)(current_msg.vx)/1000; 
-	base_cmd.linear.y = 0.0;//- (double)(current_msg.vy)/1000;
+	//base_cmd.linear.x = 0.0;//- (double)(current_msg.vx)/1000; 
+	//base_cmd.linear.y = 0.0;//- (double)(current_msg.vy)/1000;
 	base_cmd.linear.z = vel_lz;
 	base_cmd.angular.z = vel_az;
 	altitude = current_msg.altd;	
@@ -66,7 +79,7 @@ void Control::stabilize(){
 
 void Control::showData(){
 	printf("\n\n\n*****Data******\n");
-	printf("\nReceive: \nvx: %f\nvy: %f\nvz: %f\n"	
+	printf("\n*Receive: \nvx: %f\nvy: %f\nvz: %f\n"	
 					   "\nrotX: %f\nrotY: %f\nrotZ: %f\nalt: %d\n", 
 											current_msg.vx, 
 											current_msg.vy, 
@@ -77,7 +90,7 @@ void Control::showData(){
 											current_msg.altd
 											);
 
-	printf("\nSend:\nvlx: %f\nvly: %f\nvlz: %f\n"
+	printf("\n**Send:\nvlx: %f\nvly: %f\nvlz: %f\n"
 				  "\nvax: %f\nvay: %f\nvaz: %f\n",
 											base_cmd.linear.x,
 											base_cmd.linear.y,
@@ -85,8 +98,9 @@ void Control::showData(){
 											base_cmd.angular.x, 
 											base_cmd.angular.y, 
 											base_cmd.angular.z
-											);
+											);	
 	
+	printf("\n***Control Actions: \nP: %lf\nI: %lf\nD: %lf\n", P, I, D);
 }
 
 void Control::set_cmd(double xl, double yl)
@@ -99,13 +113,20 @@ void Control::set_cmd(double xl, double yl)
  
 void Control::run(Figure mark, Figure ref, bool found)
 {
-	double errx = mark.height - ref.height; 
-	double erry = mark.width - ref.width; 
-	int mul = 1;
-	double linear_x = found ? - (double)errx/(180.00*mul): 0.00, //180
-		   linear_y = found ? -(double)erry/(360.00*mul) : 0.00; //360
+	double real_errx = mark.height - ref.height; 
+	double real_erry = mark.width - ref.width; 
+	errx = found ? - (double)real_errx/(180.00): 0.00, //180
+	erry = found ? -(double)real_erry/(360.00) : 0.00; //360
 	
-	double  vel = 0.5, raio = 1;
+	double	kp = 0.5, 
+			ki = 0.5, 
+			kd = 0.001,
+			T  = 0.005; // 200Hz
+	double linear_x = pid(kp, ki, kd, errx, errx_ant, T),
+		   linear_y = pid(kp, ki, kd, erry, errx_ant, T);
+	
+	errx_ant = errx;
+	erry_ant = erry;
 	
 	set_cmd(linear_x, linear_y); 
 	//set_cmd(0, 0); 

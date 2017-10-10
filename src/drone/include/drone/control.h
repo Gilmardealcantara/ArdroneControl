@@ -19,7 +19,10 @@ class Control
 						land_pub_;
 		ros::Subscriber nav_data_sub_;
 		std_msgs::Empty msgEmpty;
-			
+		double	P = 0.0,
+				I = 0.0,
+				D = 0.0;
+		double errx, erry, errx_ant, erry_ant;
 
 	public:
         int altitude;
@@ -35,6 +38,8 @@ class Control
 		void showData();
         void set_cmd(double xl, double yl); 
         void run(figure mark, figure ref, bool found);
+		double pid(double Kp, double Ki, double Kd, 
+					double err, double err_ant, double T);
 		void end();
 };
 

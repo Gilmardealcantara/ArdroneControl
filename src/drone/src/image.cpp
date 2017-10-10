@@ -59,7 +59,7 @@ void ImageConverter::imageCb(const sensor_msgs::ImageConstPtr& msg)
 		ref.width = cv_ptr->image.size().width/2;
 		ref.height = cv_ptr->image.size().height/2;
 		double raio = 0;
-		bool found = false;
+		found = false;
 		for(int i = 0; i < circles.size(); i++){
 			//cv::circle(cv_ptr->image, cv::Point(circles[0][0], circles[0][1]), circles[0][2], CV_RGB(0,255,0), 5);
 			if(circles[i][2] > raio){
