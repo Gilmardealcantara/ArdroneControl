@@ -151,6 +151,9 @@ add_executable(${PROJECT_NAME}_node
 	src/image.cpp
 	src/main.cpp)
 
+add_compile_options(-std=c++11)
+set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
+
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use

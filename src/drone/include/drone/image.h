@@ -6,30 +6,24 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-//#include "control.h"
 
-static const std::string OPENCV_WINDOW = "Image window";
-static const std::string OPENCV_WINDOW2 = "Image window limit";
-
-typedef struct Figure{
-    double width;
-    double height;
-    double r;
-}figure;
-
+#include "utils.h"
+#include "control.h"
 
 class ImageConverter
 {
 	private:
 		ros::NodeHandle nh_;
+		Control *control = nullptr;
 		image_transport::ImageTransport it_;
 		image_transport::Subscriber image_sub_;
 		image_transport::Publisher image_pub_;
-
-    public:
+    
+	public:
         figure mark;
         figure ref;
-        ImageConverter();
+        
+		ImageConverter(Control *c);
         ~ImageConverter();
         void imageCb(const sensor_msgs::ImageConstPtr& msg);
 };

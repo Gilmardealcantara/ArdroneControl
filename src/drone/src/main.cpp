@@ -6,16 +6,17 @@
 #include "../include/drone/control.h"
 
 int flag = 0;
-Control *control = NULL;
+Control *control = nullptr;
+ImageConverter *ic = nullptr;
 
 void  ctrlc_handle(int s){
-	//control = new Control(1000, true);
 	if(control){
 		printf("finishing\n");
 		control->altitude = 0;
 		control->end();
 		ros::shutdown();
 		delete control;
+		delete ic;
 		printf("finished\n");
 		flag = 1;
 	}else if (flag){
@@ -25,9 +26,8 @@ void  ctrlc_handle(int s){
 
 int main(int argc, char** argv)
 {
-    
 	ros::init(argc, argv, "drone_node", ros::init_options::NoSigintHandler);
-	
+	ros::start();	
 	// ctrlc
 	struct sigaction sigIntHandler;
    	sigIntHandler.sa_handler = ctrlc_handle;
@@ -36,15 +36,22 @@ int main(int argc, char** argv)
 	
    	sigaction(SIGINT, &sigIntHandler, NULL);
 
-		//ros::Rate loop_rate(10);
+	ros::Rate loop_rate(100);
 	// init and end
     //system("rosservice call /ardrone/togglecam"); //simu
     //system("rosservice call /ardrone/setcamchannel \"channel: 1\"");
-    //ImageConverter ic;
 	control = new Control(1000, true);
-	control->init();
-
+    ic = new ImageConverter(control);
+	
+	//control->init();
+	/*
+	while(ros::ok()){
+		loop_rate.sleep();
+		control->stabilize();	
+		ros::spinOnce();
+	}
+	*/
 	ros::spin();
-		
+	delete ic;	
     return 0;
 }
