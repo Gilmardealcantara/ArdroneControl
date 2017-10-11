@@ -14,3 +14,6 @@ checar frequencias
 ajustar altura de takoff ou menor 
 setar camera de baixo
 testar primero controle de rotação e altitude
+
+fix 
+taxa de atucaçao diferente da tacha de rebimeto de dados

@@ -9,7 +9,6 @@ ImageConverter::ImageConverter(): it_(nh_)
 
 	cv::namedWindow(OPENCV_WINDOW);
 	//cv::namedWindow(OPENCV_WINDOW2);
-	//control = c;
 	control->init();
 }
 
@@ -21,7 +20,7 @@ ImageConverter::~ImageConverter()
 }
 
 void ImageConverter::imageCb(const sensor_msgs::ImageConstPtr& msg)
-{
+{	
 	try{
 		cv_bridge::CvImagePtr cv_ptr;
 		try{
