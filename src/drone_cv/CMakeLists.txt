@@ -12,8 +12,8 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES drone
+  #INCLUDE_DIRS include
+  #LIBRARIES drone
   CATKIN_DEPENDS 
     ardrone_autonomy 
     roscpp 
@@ -22,8 +22,8 @@ catkin_package(
     cv_bridge
     sensor_msgs
     cv_bridge
-    #tum_simulator
-    #tum_ardrone
+    tum_simulator
+    tum_ardrone
 #  DEPENDS system_lib
 )
 

@@ -51,6 +51,8 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <build_depend>tum_ardrone</build_depend> 
+  <build_depend>tum_simulator</build_depend> 
   <build_depend>image_transport</build_depend> 
   <build_depend>cv_bridge</build_depend>
   <build_depend>sensor_msgs</build_depend>
@@ -59,6 +61,8 @@
   <build_depend>roscpp</build_depend>
   <build_depend>rospy</build_depend>
   
+  <exec_depend>tum_ardrone</exec_depend> 
+  <exec_depend>tum_simulator</exec_depend> 
   <exec_depend>image_transport</exec_depend> 
   <exec_depend>cv_bridge</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
