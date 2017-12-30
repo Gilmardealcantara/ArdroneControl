@@ -8,17 +8,22 @@ ImageConverter::ImageConverter(): it_(nh_)
 	image_pub_ = it_.advertise("/image_converter/output_video", 1);
 
 	cv::namedWindow(OPENCV_WINDOW);
-	//cv::namedWindow(OPENCV_WINDOW2);
+	cv::namedWindow(OPENCV_WINDOW2);
 	control->init();
 }
 
 ImageConverter::~ImageConverter()
 {
 	cv::destroyWindow(OPENCV_WINDOW);
-	//cv::destroyWindow(OPENCV_WINDOW2);
+	cv::destroyWindow(OPENCV_WINDOW2);
 	delete control;
 }
 
+
+/* nano seconds
+mean:  5.01964e+07 * 10 -9
+max:   4.52569e+08
+*/
 void ImageConverter::imageCb(const sensor_msgs::ImageConstPtr& msg)
 {	
 	try{
@@ -75,7 +80,7 @@ void ImageConverter::imageCb(const sensor_msgs::ImageConstPtr& msg)
 		cv::circle(orig_image, cv::Point(ref.width, ref.height), 10, CV_RGB(0,0,255), 7);
 		// Update GUI Window
 		cv::imshow(OPENCV_WINDOW, orig_image);
-		//cv::imshow(OPENCV_WINDOW2, red_hue_image);
+		cv::imshow(OPENCV_WINDOW2, red_hue_image);
 		cv::waitKey(3);
 	
 		// Output modified video stream

@@ -29,6 +29,7 @@ double Control::pid(double Kp, double Ki, double Kd,
 					double err, double err_ant, double T)
 {
 	P = Kp*err;
+	// vei do ceu .... sa pora ta errada animal
 	I += Ki*err*T;
 	D = (Kd*(err - err_ant))/T;
 	//printf("P: %lf, I: %lf, D: %lf\n", P, I, D);
@@ -54,24 +55,30 @@ void Control::end(){
 		printf("Land ....\n");
     }
 }
-
+/* control nano seconds
+mean:  6.72329e+06
+max:   5.86789e+07
+*/
 void Control::navDataReceive(const ardrone_autonomy::Navdata& msg){
 	current_msg = msg; 
 	stabilize();
 	showData();	
 }
 
+//mean:  8.41395e+06 *10e-9 =~	8.4e-4	= 0.00084
+//max:   5.33942e+07 *10e-9 =~	5.3e-3	= 0.00534
 void Control::stabilize(){
-	double	err_lz = (double)(ALTD - current_msg.altd)/1000, 
-			err_az = - (double)(current_msg.rotZ)/180; // -1 : 1
+	double	err_lz = (double)(ALTD - current_msg.altd), 
+			err_az = - (double)(current_msg.rotZ)/(180); // -1 : 1
 	//printf("err: %lf %lf\n", err_lz, err_az);
-	double vel_lz =  pid(1, 0, 0, err_lz, 0 , 1);
+	double vel_lz =  pid(0.001, 0, 0, err_lz, 0 , 1);
 	double vel_az = pid(1, 0, 0, err_az, 0 , 1);
 	//printf("vel: %lf %lf\n", vel_lz, vel_az);
 	
 	//base_cmd.linear.x = 0.0;//- (double)(current_msg.vx)/1000; 
 	//base_cmd.linear.y = 0.0;//- (double)(current_msg.vy)/1000;
-	base_cmd.linear.z = vel_lz;
+	base_cmd.linear.z = 0.0;//vel_lz;
+	
 	base_cmd.angular.z = vel_az;
 	altitude = current_msg.altd;	
 	//cmd_vel_pub_.publish(base_cmd);
@@ -110,7 +117,10 @@ void Control::set_cmd(double xl, double yl)
 
 	cmd_vel_pub_.publish(base_cmd);
 }
- 
+
+//mean:  2.68742e+07 * 10e-9 =~  2.6e-3 = 0.00269
+//max:   5.31511e+07 * 10e-9 =~  5.3e-3 = 0.00532
+
 void Control::run(Figure mark, Figure ref, bool found)
 {
 	double real_errx = mark.height - ref.height; 
@@ -131,5 +141,4 @@ void Control::run(Figure mark, Figure ref, bool found)
 	set_cmd(linear_x, linear_y); 
 	//set_cmd(0, 0); 
 }
-
 

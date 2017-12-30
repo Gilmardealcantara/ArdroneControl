@@ -37,7 +37,7 @@ int main(int argc, char** argv)
 	ros::Rate loop_rate(100);
 	// init and end
     //system("rosservice call /ardrone/togglecam"); //simu
-    //system("rosservice call /ardrone/setcamchannel \"channel: 1\"");
+    system("rosservice call /ardrone/setcamchannel \"channel: 1\"");
     //ic = new ImageConverter();
 	ImageConverter ic;
 	

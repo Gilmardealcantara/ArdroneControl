@@ -14,7 +14,7 @@ class ImageConverter
 {
 	private:
 		ros::NodeHandle nh_;
-		Control *control = new Control(1000, true);
+		Control *control = new Control(400, true);
 		image_transport::ImageTransport it_;
 		image_transport::Subscriber image_sub_;
 		image_transport::Publisher image_pub_;

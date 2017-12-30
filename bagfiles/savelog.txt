@@ -1,0 +1,3 @@
+rosbag record -O subset /ardrone/navdata
+rosbag info subset.bag
+ rostopic echo -b subset.bag -p /ardrone/navdata  | less
