@@ -9,7 +9,7 @@ O sistema de simulação de dispositivos Robóticos Gazebo será usado na primei
 
 ----------
 ## Run App
-[Intall ros-indigo](http://wiki.ros.org/indigo/Installation/Ubuntu)
+[Install ros-indigo](http://wiki.ros.org/indigo/Installation/Ubuntu)
 
 ### Compile
 ``` shell 
